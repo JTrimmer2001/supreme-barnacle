@@ -214,12 +214,12 @@ def matchsets():
     '''
 
 
-    with fits.open('/Users/Jet26/Documents/Data/Graph plotting/AGNLim') as hdu:
+    with fits.open('/Users/Owner/Documents/Coding/AGNLim') as hdu:
         data_agn = hdu[1].data
         mass_AGN = data_agn.field('mass_best')
         zpdf_AGN = data_agn.field('zpdf') #Initialises agn data stores, takes data from fits table[1]
 
-    with fits.open('/Users/Jet26/Documents/Data/Graph plotting/nonAGNLim') as hdu:
+    with fits.open('/Users/Owner/Documents/Coding/nonAGNLim') as hdu:
         data_gal = hdu[1].data
         mass = data_gal.field('mass_best')
         zpdf = data_gal.field('zpdf') #Initialises non-agn data stores
@@ -249,6 +249,7 @@ def matchsets():
     #Might be worth doing linspace with a bin count of 15-20 but I suppose this will just get more specific results
 
     i_ = 0
+    Tablemade = False
 
     for i_x in AGNbox:
 
@@ -271,7 +272,7 @@ def matchsets():
             mask1 = interim1['mass_best'] >= nonAGN_bins_y[yindex]
             interim1 = interim1[mask1]
             mask1 = interim1['mass_best'] <= nonAGN_bins_y[yindex_plus1]
-            nonagnboxdata1 = interim1[mask1]
+            interim1 = interim1[mask1]
 
             mask2 = data_agn['zpdf'] >= AGN_bins_x[xindex]
             interim2 = data_agn[mask2]
@@ -280,11 +281,11 @@ def matchsets():
             mask2 = interim2['mass_best'] >= AGN_bins_y[yindex]
             interim2 = interim2[mask2]
             mask2 = interim2['mass_best'] <= AGN_bins_y[yindex_plus1]
-            aganboxdata2 = interim2[mask2]
+            interim2 = interim2[mask2]
 
 
 
-            NApopulation = fits.BinTableHDU(data=nonagnboxdata1)
+            NApopulation = fits.BinTableHDU(data=interim1)
             Apopulation = fits.BinTableHDU(data=interim2) # Creates new hdu tables with the restricted data
 
             try: 
@@ -296,7 +297,7 @@ def matchsets():
             except:
                 Arows = 0
 
-            Tablemade = False
+            
 
             if AGNbox[xindex,yindex] < nonAGNbox[xindex,yindex]:
                 #create mask of data within bin values (i,i+1)
@@ -304,6 +305,13 @@ def matchsets():
                 # append to a matched data table - save to file
 
                 diff = int(nonAGNbox[xindex,yindex] - AGNbox[xindex,yindex]) # Finds difference in samples for the box
+
+                if Tablemade == False:
+                    Master = interim2
+                    Tablemade == True
+
+                else:
+                    Master = np.append(Master,interim2)
 
                 for i in range(diff):
 
@@ -314,14 +322,7 @@ def matchsets():
                         Master = sample
                         Tablemade = True
                     else:
-                        Master.append(sample)
-
-                if Tablemade == False:
-                    Master = interim2
-                    Tablemade == True
-
-                else:
-                    Master.append(interim2)
+                        Master = np.append(Master,sample)
 
                 '''for i in range(diff):
                     randsample = np.random_integers(0,NArows)
@@ -342,6 +343,13 @@ def matchsets():
 
                 diff = AGNbox[xindex,yindex] - nonAGNbox[xindex,yindex] # Finds difference in samples for the box
 
+                if Tablemade == False:
+                    Master = interim1
+                    Tablemade == True
+
+                else:
+                    Master = np.append(Master,interim1)
+
                 for i in range(diff):
                     randsample = np.random_intergers(0,Apopulation)
                     sample = Apopulation[randsample]
@@ -350,14 +358,7 @@ def matchsets():
                         Master = sample
                         Tablemade = True
                     else:
-                        Master.append(sample)
-
-                if Tablemade == False:
-                    Master = interim1
-                    Tablemade == True
-
-                else:
-                    Master.append(interim1)
+                        Master = np.append(Master,sample)
 
             elif AGNbox[xindex,yindex] == nonAGNbox[xindex,yindex]:
                 # create mask with bin values
@@ -374,10 +375,12 @@ def matchsets():
                     Tablemade = True
 
                 else:
-                    Master.append(interim1)
+                    Master = np.append(Master, interim1)
 
 
-        i_ += 1              
+        i_ += 1   
+
+    print(Master)           
 
             
 
