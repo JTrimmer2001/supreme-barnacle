@@ -17,7 +17,7 @@ def starfilter():
 
 
 def redshiftlimit(): 
-    with fits.open('AGNLim') as galtable:
+    with fits.open('/Users/Jet26/Documents/Data/Graph plotting/AGNLim') as galtable:
         galdata = galtable[1].data
 
         mask1 = galdata['zpdf'] > 0.25
@@ -271,7 +271,7 @@ def matchsets():
             mask1 = interim1['mass_best'] >= nonAGN_bins_y[yindex]
             interim1 = interim1[mask1]
             mask1 = interim1['mass_best'] <= nonAGN_bins_y[yindex_plus1]
-            interim1 = interim1[mask1]
+            nonagnboxdata1 = interim1[mask1]
 
             mask2 = data_agn['zpdf'] >= AGN_bins_x[xindex]
             interim2 = data_agn[mask2]
@@ -280,11 +280,11 @@ def matchsets():
             mask2 = interim2['mass_best'] >= AGN_bins_y[yindex]
             interim2 = interim2[mask2]
             mask2 = interim2['mass_best'] <= AGN_bins_y[yindex_plus1]
-            interim2 = interim2[mask2]
+            aganboxdata2 = interim2[mask2]
 
 
 
-            NApopulation = fits.BinTableHDU(data=interim1)
+            NApopulation = fits.BinTableHDU(data=nonagnboxdata1)
             Apopulation = fits.BinTableHDU(data=interim2) # Creates new hdu tables with the restricted data
 
             try: 
