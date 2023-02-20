@@ -214,12 +214,12 @@ def matchsets():
     '''
 
 
-    with fits.open('AGNLim') as hdu:
+    with fits.open('/Users/Jet26/Documents/Data/Graph plotting/AGNLim') as hdu:
         data_agn = hdu[1].data
         mass_AGN = data_agn.field('mass_best')
         zpdf_AGN = data_agn.field('zpdf') #Initialises agn data stores, takes data from fits table[1]
 
-    with fits.open('nonAGNLimit.fits') as hdu:
+    with fits.open('/Users/Jet26/Documents/Data/Graph plotting/nonAGNLim') as hdu:
         data_gal = hdu[1].data
         mass = data_gal.field('mass_best')
         zpdf = data_gal.field('zpdf') #Initialises non-agn data stores
@@ -248,11 +248,11 @@ def matchsets():
     #auto binning with basic_stats generates 62 bins, far more than is neccessary for agn data since theres only 310 points
     #Might be worth doing linspace with a bin count of 15-20 but I suppose this will just get more specific results
 
-    i = 0
+    i_ = 0
 
     for i_x in AGNbox:
 
-        xindex = i_x[i]
+        xindex = i_x[i_]
         xindex = int(xindex)
         xindex_plus1 = xindex +1
         y=0
@@ -296,14 +296,34 @@ def matchsets():
             except:
                 Arows = 0
 
+            Tablemade = False
+
             if AGNbox[xindex,yindex] < nonAGNbox[xindex,yindex]:
                 #create mask of data within bin values (i,i+1)
                 # sample a random point from mask using np.random however many times needed to be equal to agn
                 # append to a matched data table - save to file
 
-                diff = nonAGNbox[xindex,yindex] - AGNbox[xindex,yindex] # Finds difference in samples for the box
+                diff = int(nonAGNbox[xindex,yindex] - AGNbox[xindex,yindex]) # Finds difference in samples for the box
 
                 for i in range(diff):
+
+                    randsample = np.random_intergers(0,NApopulation)
+                    sample = NApopulation[randsample]
+
+                    if Tablemade == False:
+                        Master = sample
+                        Tablemade = True
+                    else:
+                        Master.append(sample)
+
+                if Tablemade == False:
+                    Master = interim2
+                    Tablemade == True
+
+                else:
+                    Master.append(interim2)
+
+                '''for i in range(diff):
                     randsample = np.random_integers(0,NArows)
                     sample = NApopulation[randsample] # should take the random number as an index argument and then pick a record based on that
 
@@ -312,7 +332,7 @@ def matchsets():
                     fits.append('zmass-master.fits',sample) # .append writes the file if it does not already exist (should write anyway)
 
                 fits.append('histdata/zmass-'+i_x+'-'+i_y+'.fits',Apopulation)# appends agn mask for the box to the file
-                fits.append('zmass-master.fits',Apopulation)
+                fits.append('zmass-master.fits',Apopulation)'''
 
 
             elif AGNbox[xindex,yindex] > nonAGNbox[xindex,yindex]:
@@ -323,29 +343,41 @@ def matchsets():
                 diff = AGNbox[xindex,yindex] - nonAGNbox[xindex,yindex] # Finds difference in samples for the box
 
                 for i in range(diff):
-                    randsample = np.random_integers(0,Arows)
-                    sample = Apopulation[randsample] # should take the random number as an index argument and then pick a record based on that
+                    randsample = np.random_intergers(0,Apopulation)
+                    sample = Apopulation[randsample]
 
-                    test_sample = fits.BinTableHDU(data=sample) # makes a single row hdu
-                    test_sample.append('histdata/zmass-'+i_x+'-'+i_y+'.fits',sample) # writes the sample to a new file for the specific bin
-                    test_sample.append('zmass-master.fits',sample) # .append writes the file if it does not already exist (should write anyway)
+                    if Tablemade == False:
+                        Master = sample
+                        Tablemade = True
+                    else:
+                        Master.append(sample)
 
-                fits.append('histdata/zmass-'+i_x+'-'+i_y+'.fits',NApopulation)# appends agn mask for the box to the file
-                fits.append('zmass-master.fits',NApopulation)
+                if Tablemade == False:
+                    Master = interim1
+                    Tablemade == True
+
+                else:
+                    Master.append(interim1)
 
             elif AGNbox[xindex,yindex] == nonAGNbox[xindex,yindex]:
                 # create mask with bin values
                 # take a sample
                 # append to table  
-
-                fits.append('histdata/zmass-'+i_x+'-'+i_y+'.fits',NApopulation)# appends agn mask for the box to the file
-                fits.append('zmass-master.fits',NApopulation)
-
-                fits.append('histdata/zmass-'+i_x+'-'+i_y+'.fits',NApopulation)# appends agn mask for the box to the file
-                fits.append('zmass-master.fits',NApopulation)
+                # # appends agn mask for the box to the file
 
 
-        i += 1              
+                # appends agn mask for the box to the file
+                interim1 = np.append(interim1,interim2)
+
+                if Tablemade == False:
+                    Master = interim1
+                    Tablemade = True
+
+                else:
+                    Master.append(interim1)
+
+
+        i_ += 1              
 
             
 
