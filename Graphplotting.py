@@ -219,7 +219,7 @@ def matchsets():
         mass_AGN = data_agn.field('mass_best')
         zpdf_AGN = data_agn.field('zpdf') #Initialises agn data stores, takes data from fits table[1]
 
-    with fits.open('/Users/Owner/Documents/Coding/nonAGNLim') as hdu:
+    with fits.open('Test data set') as hdu:
         data_gal = hdu[1].data
         mass = data_gal.field('mass_best')
         zpdf = data_gal.field('zpdf') #Initialises non-agn data stores
@@ -248,21 +248,18 @@ def matchsets():
     #auto binning with basic_stats generates 62 bins, far more than is neccessary for agn data since theres only 310 points
     #Might be worth doing linspace with a bin count of 15-20 but I suppose this will just get more specific results
 
-    i_ = 0
+    '''i_ = 0
     Tablemade = False
+    xindex = 0
 
     for i_x in AGNbox:
 
-        xindex = i_x[i_]
-        xindex = int(xindex)
         xindex_plus1 = xindex +1
-        y=0
+        yindex=0
 
         for i_y in i_x:
 
-            yindex = i_y
-            y += 1
-            yindex = int(yindex)
+            
             yindex_plus1 = yindex + 1
 
             mask1 = data_gal['zpdf'] >= nonAGN_bins_x[xindex]
@@ -283,31 +280,36 @@ def matchsets():
             mask2 = interim2['mass_best'] <= AGN_bins_y[yindex_plus1]
             interim2 = interim2[mask2]
 
-
+            print(xindex ,',',yindex)
 
             NApopulation = fits.BinTableHDU(data=interim1)
             Apopulation = fits.BinTableHDU(data=interim2) # Creates new hdu tables with the restricted data
 
             try: 
-                NArows = NApopulation['NAXIS']
+                NArows = NApopulation._nrows
             except:
                 NArows = 0
             try:
-                Arows = Apopulation['NAXIS2']
+                Arows = Apopulation._nrows
             except:
                 Arows = 0
 
-            
+            if AGNbox[xindex,yindex] == 0:
+                print('Skipped',AGNbox[xindex,yindex],'at', xindex,',', yindex)
 
-            if AGNbox[xindex,yindex] < nonAGNbox[xindex,yindex]:
+                NArows = 0
+
+            elif AGNbox[xindex,yindex] < nonAGNbox[xindex,yindex]:
                 #create mask of data within bin values (i,i+1)
                 # sample a random point from mask using np.random however many times needed to be equal to agn
                 # append to a matched data table - save to file
+                print('AGN less than nonAGN at',xindex,',',yindex)
 
                 diff = int(nonAGNbox[xindex,yindex] - AGNbox[xindex,yindex]) # Finds difference in samples for the box
 
                 if Tablemade == False:
                     Master = interim2
+                    print('Table made!', Master)
                     Tablemade == True
 
                 else:
@@ -315,7 +317,7 @@ def matchsets():
 
                 for i in range(diff):
 
-                    randsample = np.random_intergers(0,NApopulation)
+                    randsample = np.random.randint(0,NArows+1)
                     sample = NApopulation[randsample]
 
                     if Tablemade == False:
@@ -324,22 +326,12 @@ def matchsets():
                     else:
                         Master = np.append(Master,sample)
 
-                '''for i in range(diff):
-                    randsample = np.random_integers(0,NArows)
-                    sample = NApopulation[randsample] # should take the random number as an index argument and then pick a record based on that
-
-                    test_sample = fits.BinTableHDU(data=sample) # makes a single row hdu
-                    fits.append('histdata/zmass-'+i_x+'-'+i_y+'.fits',sample) # writes the sample to a new file for the specific bin
-                    fits.append('zmass-master.fits',sample) # .append writes the file if it does not already exist (should write anyway)
-
-                fits.append('histdata/zmass-'+i_x+'-'+i_y+'.fits',Apopulation)# appends agn mask for the box to the file
-                fits.append('zmass-master.fits',Apopulation)'''
-
 
             elif AGNbox[xindex,yindex] > nonAGNbox[xindex,yindex]:
                 # create mask with bin values
                 # take a sample
                 # append to table
+                print('AGN more than nonAGN at',xindex,',',yindex)
 
                 diff = AGNbox[xindex,yindex] - nonAGNbox[xindex,yindex] # Finds difference in samples for the box
 
@@ -351,11 +343,12 @@ def matchsets():
                     Master = np.append(Master,interim1)
 
                 for i in range(diff):
-                    randsample = np.random_intergers(0,Apopulation)
+                    randsample = np.random.randint(0,Arows+1)
                     sample = Apopulation[randsample]
 
                     if Tablemade == False:
                         Master = sample
+                        print('Table made!', Master)
                         Tablemade = True
                     else:
                         Master = np.append(Master,sample)
@@ -365,24 +358,76 @@ def matchsets():
                 # take a sample
                 # append to table  
                 # # appends agn mask for the box to the file
-
+                print('AGN same as nonAGN at',xindex,',',yindex)
 
                 # appends agn mask for the box to the file
                 interim1 = np.append(interim1,interim2)
 
                 if Tablemade == False:
                     Master = interim1
+                    print('Table made!', Master)
                     Tablemade = True
 
                 else:
                     Master = np.append(Master, interim1)
 
+            yindex += 1
 
-        i_ += 1   
 
-    print(Master)           
+        xindex += 1   
+
+    print(Master)
+    print(Master._nrows)
+    '''           
 
             
+    #new method
+    x=0
+    for i_x in AGNbox:
+        y=0
+        for i_y in i_x: #loops through the histogram to get x and y coords
+
+            NAGNamount = nonAGNbox[x,y]
+
+            if i_y == 0:
+                print('skipped 0 value at',x,',',y)
+                y+=1
+
+            else:
+                if i_y > NAGNamount:
+                    AXlower = AGN_bins_x[x]
+                    AXupper = AGN_bins_x[x+1]
+                    AYlower = AGN_bins_y[y]
+                    AYupper = AGN_bins_y[y+1]
+
+                    mask1 = data_agn['zpdf'] >= AXlower
+                    interim = data_agn[mask1]
+                    mask1 = interim['zpdf'] <= AXupper
+                    interim = interim[mask1]
+                    mask1 = interim['mass_best'] >= AYlower
+                    interim = interim[mask1]
+                    mask1 = interim['mass_best'] <= AYupper
+                    AGN_quantity = interim[mask1]
+
+                    NXlower = nonAGN_bins_x[x]
+                    NXupper = nonAGN_bins_x[x+1]
+                    NYlower = nonAGN_bins_y[y]
+                    NYupper = nonAGN_bins_y[y+1]
+
+                    mask2 = data_agn['zpdf'] >= NXlower
+                    interim = data_agn[mask2]
+                    mask2 = interim['zpdf'] <= NXupper
+                    interim = interim[mask2]
+                    mask2 = interim['mass_best'] >= NYlower
+                    interim = interim[mask2]
+                    mask2 = interim['mass_best'] <= NYupper
+                    gal_quantity = interim[mask2]
+
+                elif i_y < NAGNamount:
+                    print('less agns!')
+
+                else:
+                    print('things are equal')
 
 
 
