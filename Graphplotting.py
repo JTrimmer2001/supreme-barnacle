@@ -1,4 +1,5 @@
 from astropy.io import fits
+from astropy.table import table
 import basic_stats as bs
 import numpy as np
 import matplotlib.pyplot as plt
@@ -219,7 +220,7 @@ def matchsets():
         mass_AGN = data_agn.field('mass_best')
         zpdf_AGN = data_agn.field('zpdf') #Initialises agn data stores, takes data from fits table[1]
 
-    with fits.open('Test data set') as hdu:
+    with fits.open('Test data') as hdu:
         data_gal = hdu[1].data
         mass = data_gal.field('mass_best')
         zpdf = data_gal.field('zpdf') #Initialises non-agn data stores
@@ -383,6 +384,7 @@ def matchsets():
             
     #new method
     x=0
+    tablemade = False
     for i_x in AGNbox:
         y=0
         for i_y in i_x: #loops through the histogram to get x and y coords
@@ -395,6 +397,7 @@ def matchsets():
 
             else:
                 if i_y > NAGNamount:
+                    print('More AGNs at:',x,',',y)
                     AXlower = AGN_bins_x[x]
                     AXupper = AGN_bins_x[x+1]
                     AYlower = AGN_bins_y[y]
@@ -423,11 +426,66 @@ def matchsets():
                     mask2 = interim['mass_best'] <= NYupper
                     gal_quantity = interim[mask2]
 
+                    if tablemade == False:
+                        tablemade = True
+                        mastertable = table(AGN_quantity)
+
+                    y+=1
+
                 elif i_y < NAGNamount:
-                    print('less agns!')
+                    print('less AGNs at:',x,',',y)
+
+                    AXlower = AGN_bins_x[x]
+                    AXupper = AGN_bins_x[x+1]
+                    AYlower = AGN_bins_y[y]
+                    AYupper = AGN_bins_y[y+1]
+
+                    mask1 = data_agn['zpdf'] >= AXlower
+                    interim = data_agn[mask1]
+                    mask1 = interim['zpdf'] <= AXupper
+                    interim = interim[mask1]
+                    mask1 = interim['mass_best'] >= AYlower
+                    interim = interim[mask1]
+                    mask1 = interim['mass_best'] <= AYupper
+                    AGN_quantity = interim[mask1]
+
+                    NXlower = nonAGN_bins_x[x]
+                    NXupper = nonAGN_bins_x[x+1]
+                    NYlower = nonAGN_bins_y[y]
+                    NYupper = nonAGN_bins_y[y+1]
+
+                    mask2 = data_agn['zpdf'] >= NXlower
+                    interim = data_agn[mask2]
+                    mask2 = interim['zpdf'] <= NXupper
+                    interim = interim[mask2]
+                    mask2 = interim['mass_best'] >= NYlower
+                    interim = interim[mask2]
+                    mask2 = interim['mass_best'] <= NYupper
+                    gal_quantity = interim[mask2]
+
+                    if tablemade == False:
+                        tablemade = True
+                        mastertable = table.Table(data = AGN_quantity)
+                    
+                    else:
+                        mastertable.add_row(AGN_quantity)
+
+                    diff = int(NAGNamount - i_y)
+
+                    for i in range(diff):
+                        randindex = np.random.randint(0, NAGNamount-1)
+                        sample = gal_quantity[randindex]
+
+                        mastertable.add_row(sample)
+
+
+                    y+=1
 
                 else:
-                    print('things are equal')
+                    print('Equal AGNs at:',x,',',y)
+                    y+=1
+
+        x+=1
 
 
 
