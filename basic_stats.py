@@ -63,8 +63,8 @@ def weight_dist(arr1, arr2, bins=None, return_bins=True, renorm=False):
     # if bins not specified, guess at them ourselves
     if bins is None:
         minsize = np.amin([    len(arr1),     len(arr2)])
-        themin  = np.amin([np.amin(arr1), np.amin(arr2)])
-        themax  = np.amax([np.amax(arr1), np.amax(arr2)])
+        themin  = np.amin([np.nanmin(arr1), np.nanmin(arr2)])
+        themax  = np.amax([np.nanmax(arr1), np.nanmax(arr2)])
 
         # on average 5 data points per bin, but at least 3 bins pls, max value is last bin edge
         bins = np.linspace(themin, themax, int(np.amax([(minsize/5)+1, 3])), endpoint=True)

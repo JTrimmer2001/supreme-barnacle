@@ -1,9 +1,12 @@
 from astropy.io import fits
+from astropy.table import table
 import basic_stats as bs
 import numpy as np
 import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.graph_objects as go
+import pandas as pd
+import time
 
 def starfilter():
     with fits.open("TOPCAT B") as BaseTable: #This isnt in this directory anymore lol
@@ -214,12 +217,12 @@ def matchsets():
     '''
 
 
-    with fits.open('/Users/Jet26/Documents/Data/Graph plotting/AGNLim') as hdu:
+    with fits.open('/Users/Owner/Documents/Coding/AGNLim') as hdu:
         data_agn = hdu[1].data
         mass_AGN = data_agn.field('mass_best')
         zpdf_AGN = data_agn.field('zpdf') #Initialises agn data stores, takes data from fits table[1]
 
-    with fits.open('/Users/Jet26/Documents/Data/Graph plotting/nonAGNLim') as hdu:
+    with fits.open('Test data') as hdu:
         data_gal = hdu[1].data
         mass = data_gal.field('mass_best')
         zpdf = data_gal.field('zpdf') #Initialises non-agn data stores
@@ -248,20 +251,18 @@ def matchsets():
     #auto binning with basic_stats generates 62 bins, far more than is neccessary for agn data since theres only 310 points
     #Might be worth doing linspace with a bin count of 15-20 but I suppose this will just get more specific results
 
-    i_ = 0
+    '''i_ = 0
+    Tablemade = False
+    xindex = 0
 
     for i_x in AGNbox:
 
-        xindex = i_x[i_]
-        xindex = int(xindex)
         xindex_plus1 = xindex +1
-        y=0
+        yindex=0
 
         for i_y in i_x:
 
-            yindex = i_y
-            y += 1
-            yindex = int(yindex)
+            
             yindex_plus1 = yindex + 1
 
             mask1 = data_gal['zpdf'] >= nonAGN_bins_x[xindex]
@@ -271,7 +272,7 @@ def matchsets():
             mask1 = interim1['mass_best'] >= nonAGN_bins_y[yindex]
             interim1 = interim1[mask1]
             mask1 = interim1['mass_best'] <= nonAGN_bins_y[yindex_plus1]
-            nonagnboxdata1 = interim1[mask1]
+            interim1 = interim1[mask1]
 
             mask2 = data_agn['zpdf'] >= AGN_bins_x[xindex]
             interim2 = data_agn[mask2]
@@ -280,115 +281,280 @@ def matchsets():
             mask2 = interim2['mass_best'] >= AGN_bins_y[yindex]
             interim2 = interim2[mask2]
             mask2 = interim2['mass_best'] <= AGN_bins_y[yindex_plus1]
-            aganboxdata2 = interim2[mask2]
+            interim2 = interim2[mask2]
 
+            print(xindex ,',',yindex)
 
-
-            NApopulation = fits.BinTableHDU(data=nonagnboxdata1)
+            NApopulation = fits.BinTableHDU(data=interim1)
             Apopulation = fits.BinTableHDU(data=interim2) # Creates new hdu tables with the restricted data
 
             try: 
-                NArows = NApopulation['NAXIS']
+                NArows = NApopulation._nrows
             except:
                 NArows = 0
             try:
-                Arows = Apopulation['NAXIS2']
+                Arows = Apopulation._nrows
             except:
                 Arows = 0
 
-            Tablemade = False
+            if AGNbox[xindex,yindex] == 0:
+                print('Skipped',AGNbox[xindex,yindex],'at', xindex,',', yindex)
 
-            if AGNbox[xindex,yindex] < nonAGNbox[xindex,yindex]:
+                NArows = 0
+
+            elif AGNbox[xindex,yindex] < nonAGNbox[xindex,yindex]:
                 #create mask of data within bin values (i,i+1)
                 # sample a random point from mask using np.random however many times needed to be equal to agn
                 # append to a matched data table - save to file
+                print('AGN less than nonAGN at',xindex,',',yindex)
 
                 diff = int(nonAGNbox[xindex,yindex] - AGNbox[xindex,yindex]) # Finds difference in samples for the box
 
+                if Tablemade == False:
+                    Master = interim2
+                    print('Table made!', Master)
+                    Tablemade == True
+
+                else:
+                    Master = np.append(Master,interim2)
+
                 for i in range(diff):
 
-                    randsample = np.random_intergers(0,NApopulation)
+                    randsample = np.random.randint(0,NArows+1)
                     sample = NApopulation[randsample]
 
                     if Tablemade == False:
                         Master = sample
                         Tablemade = True
                     else:
-                        Master.append(sample)
-
-                if Tablemade == False:
-                    Master = interim2
-                    Tablemade == True
-
-                else:
-                    Master.append(interim2)
-
-                '''for i in range(diff):
-                    randsample = np.random_integers(0,NArows)
-                    sample = NApopulation[randsample] # should take the random number as an index argument and then pick a record based on that
-
-                    test_sample = fits.BinTableHDU(data=sample) # makes a single row hdu
-                    fits.append('histdata/zmass-'+i_x+'-'+i_y+'.fits',sample) # writes the sample to a new file for the specific bin
-                    fits.append('zmass-master.fits',sample) # .append writes the file if it does not already exist (should write anyway)
-
-                fits.append('histdata/zmass-'+i_x+'-'+i_y+'.fits',Apopulation)# appends agn mask for the box to the file
-                fits.append('zmass-master.fits',Apopulation)'''
+                        Master = np.append(Master,sample)
 
 
             elif AGNbox[xindex,yindex] > nonAGNbox[xindex,yindex]:
                 # create mask with bin values
                 # take a sample
                 # append to table
+                print('AGN more than nonAGN at',xindex,',',yindex)
 
                 diff = AGNbox[xindex,yindex] - nonAGNbox[xindex,yindex] # Finds difference in samples for the box
-
-                for i in range(diff):
-                    randsample = np.random_intergers(0,Apopulation)
-                    sample = Apopulation[randsample]
-
-                    if Tablemade == False:
-                        Master = sample
-                        Tablemade = True
-                    else:
-                        Master.append(sample)
 
                 if Tablemade == False:
                     Master = interim1
                     Tablemade == True
 
                 else:
-                    Master.append(interim1)
+                    Master = np.append(Master,interim1)
+
+                for i in range(diff):
+                    randsample = np.random.randint(0,Arows+1)
+                    sample = Apopulation[randsample]
+
+                    if Tablemade == False:
+                        Master = sample
+                        print('Table made!', Master)
+                        Tablemade = True
+                    else:
+                        Master = np.append(Master,sample)
 
             elif AGNbox[xindex,yindex] == nonAGNbox[xindex,yindex]:
                 # create mask with bin values
                 # take a sample
                 # append to table  
                 # # appends agn mask for the box to the file
-
+                print('AGN same as nonAGN at',xindex,',',yindex)
 
                 # appends agn mask for the box to the file
                 interim1 = np.append(interim1,interim2)
 
                 if Tablemade == False:
                     Master = interim1
+                    print('Table made!', Master)
                     Tablemade = True
 
                 else:
-                    Master.append(interim1)
+                    Master = np.append(Master, interim1)
+
+            yindex += 1
 
 
-        i_ += 1              
+        xindex += 1   
+
+    print(Master)
+    print(Master._nrows)
+    '''           
 
             
+    #new method
+    x=0
+    tablemade = False
+    for i_x in AGNbox:
+        y=0
+        for i_y in i_x: #loops through the histogram to get x and y coords
+
+            NAGNamount = nonAGNbox[x,y]
+
+            if i_y == 0:
+                print('skipped 0 value at',x,',',y)
+                y+=1
+
+            else:
+                if i_y > NAGNamount:
+                    print('More AGNs at:',x,',',y)
+                    AXlower = AGN_bins_x[x]
+                    AXupper = AGN_bins_x[x+1]
+                    AYlower = AGN_bins_y[y]
+                    AYupper = AGN_bins_y[y+1]
+
+                    mask1 = data_agn['zpdf'] >= AXlower
+                    interim = data_agn[mask1]
+                    mask1 = interim['zpdf'] <= AXupper
+                    interim = interim[mask1]
+                    mask1 = interim['mass_best'] >= AYlower
+                    interim = interim[mask1]
+                    mask1 = interim['mass_best'] <= AYupper
+                    AGN_quantity = interim[mask1]
+
+                    NXlower = nonAGN_bins_x[x]
+                    NXupper = nonAGN_bins_x[x+1]
+                    NYlower = nonAGN_bins_y[y]
+                    NYupper = nonAGN_bins_y[y+1]
+
+                    mask2 = data_agn['zpdf'] >= NXlower
+                    interim = data_agn[mask2]
+                    mask2 = interim['zpdf'] <= NXupper
+                    interim = interim[mask2]
+                    mask2 = interim['mass_best'] >= NYlower
+                    interim = interim[mask2]
+                    mask2 = interim['mass_best'] <= NYupper
+                    gal_quantity = interim[mask2]
+
+                    if tablemade == False:
+                        tablemade = True
+                        mastertable = table(AGN_quantity)
+
+                    y+=1
+
+                elif i_y < NAGNamount:
+                    print('less AGNs at:',x,',',y)
+
+                    AXlower = AGN_bins_x[x]
+                    AXupper = AGN_bins_x[x+1]
+                    AYlower = AGN_bins_y[y]
+                    AYupper = AGN_bins_y[y+1]
+
+                    mask1 = data_agn['zpdf'] >= AXlower
+                    interim = data_agn[mask1]
+                    mask1 = interim['zpdf'] <= AXupper
+                    interim = interim[mask1]
+                    mask1 = interim['mass_best'] >= AYlower
+                    interim = interim[mask1]
+                    mask1 = interim['mass_best'] <= AYupper
+                    AGN_quantity = interim[mask1]
+
+                    NXlower = nonAGN_bins_x[x]
+                    NXupper = nonAGN_bins_x[x+1]
+                    NYlower = nonAGN_bins_y[y]
+                    NYupper = nonAGN_bins_y[y+1]
+
+                    mask2 = data_agn['zpdf'] >= NXlower
+                    interim = data_agn[mask2]
+                    mask2 = interim['zpdf'] <= NXupper
+                    interim = interim[mask2]
+                    mask2 = interim['mass_best'] >= NYlower
+                    interim = interim[mask2]
+                    mask2 = interim['mass_best'] <= NYupper
+                    gal_quantity = interim[mask2]
+
+                    if tablemade == False:
+                        tablemade = True
+                        mastertable = table.Table(data = AGN_quantity)
+                    
+                    else:
+                        mastertable.add_row(AGN_quantity)
+
+                    diff = int(NAGNamount - i_y)
+
+                    for i in range(diff):
+                        randindex = np.random.randint(0, NAGNamount-1)
+                        sample = gal_quantity[randindex]
+
+                        mastertable.add_row(sample)
 
 
+                    y+=1
+
+                else:
+                    print('Equal AGNs at:',x,',',y)
+                    y+=1
+
+        x+=1
 
 
-matchsets()
+def newMatchset():
+    #Im just going to start a new function because the old one was pretty cool
 
 
+    #Loading in the data:
+
+    with fits.open('Test data') as hdu:
+        data_gal = hdu[1].data
+        gal_ids = data_gal.field('id')
+        gal_ids = gal_ids.byteswap().newbyteorder()
+        gal_zpdf = data_gal.field('zpdf')
+        gal_zpdf = gal_zpdf.byteswap().newbyteorder()
+        gal_mass = data_gal.field('mass_best') # These load the three important fields into their own numpy arrays
+        gal_mass = gal_mass.byteswap().newbyteorder()
+
+    with fits.open('/Users/Owner/Documents/Coding/AGNLim') as hdu:
+        data_agn = hdu[1].data
+        agn_ids = data_agn.field('id') # ID allows the galaxy to be identified in the catalogues afterwards
+        agn_ids = agn_ids.byteswap().newbyteorder()
+        agn_zpdf = data_agn.field('zpdf') # zpdf is the redshift of the galaxy
+        agn_zpdf = agn_zpdf.byteswap().newbyteorder()
+        agn_mass = data_agn.field('mass_best') # mass_best is the best estimate for the mass
+        agn_mass = agn_mass.byteswap().newbyteorder()
+
+    gal_table = pd.DataFrame({
+        'id': gal_ids,
+        'zpdf': gal_zpdf,
+        'mass': gal_mass,
+    }) # Pandas data tables seem easy to use and allow for rows to be selected easily without needing to worry about losing track of whats what
+    
+    agn_table = pd.DataFrame({
+        'id': agn_ids,
+        'zpdf': agn_zpdf,
+        'mass': agn_mass,
+    })
+
+    w1,w2,zpdf_bins = bs.weight_dist(gal_zpdf,agn_zpdf,return_bins=True)
+    w1,w2,mass_bins = bs.weight_dist(gal_mass,agn_mass,return_bins=True) # generates a good set of bins for each histogram axis
+
+    agn_histogram, xbins_agn, ybins_agn = np.histogram2d(agn_zpdf,agn_mass,[zpdf_bins,mass_bins]) # generates a histogram of the agn data
+    gal_histogram, xbins_gal, ybins_gal = np.histogram2d(gal_zpdf,gal_mass,[zpdf_bins,mass_bins]) # generates histogram of non-agn data
+
+    agn_subset = agn_table[agn_table['zpdf'] <= 0.7] 
+
+    '''
+    ^^^ This is how selecting pandas data works, doesnt seem to like having more than one expression at a time so will
+    need to filter a few times for all data, thats chill tho
+    '''
+
+    x=0
+    for i_x in agn_histogram:
+        y=0
+        for i_y in i_x: # These nested loops loop through the histogram to see if there are more or less agns
+
+            if i_y == 0: # begins checking the amount of agns in the square with 0 (to speed up process)
+                print('Skipped data at:',x,',',y,'                                                                             ','/r')
+                time.sleep(0.5) # slows the skipping so you can see whats going on
+
+            elif i_y < gal_histogram[x,y]:
+                diff = gal_histogram[x,y] - i_y
+
+                agn_subset = agn_table.groupby('zpdf').filter()
+                
 
     
-
+newMatchset()
 
 
