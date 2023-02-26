@@ -12,7 +12,7 @@ import time
 
 def newMatchset():
     #Im just going to start a new function because the old one was pretty cool
-
+    matchesmade = int(0)
 
     #Loading in the data:
 
@@ -67,7 +67,7 @@ def newMatchset():
         for i_y in i_x: # These nested loops loop through the histogram to see if there are more or less agns
 
             if i_y == 0: # begins checking the amount of agns in the square with 0 (to speed up process)
-                print('\r','Skipped data at:',x,',',y,'                                                                             ',sep='',end='', flush = True)
+                print('\r','Skipped data at:',x,',',y,'                               matches made: ',matchesmade,'                 ',sep='',end='', flush = True)
                 time.sleep(0.1) # slows the skipping so you can see whats going on
 
             elif i_y < gal_histogram[x,y]:
@@ -86,8 +86,8 @@ def newMatchset():
                 gal_sample = gal_subset.sample(int(i_y) )# Takes a random sample of data in the set to match the amount in the agn set
 
                 master = pd.concat([master,agn_subset,gal_sample], ignore_index=True, sort=False) # Concats the three tables together, ignoring index so thngs dont get confuse
-
-                print('\r',i_y,'AGNs and', gal_histogram[x,y], 'Galaxies at',[x,y],'                                                ', flush=True)
+                matchesmade += 2*i_y
+                print('\r',i_y,'AGNs and', gal_histogram[x,y], 'Galaxies at',[x,y],'                 matches made: ',matchesmade,'  ',sep='',end='', flush = True)
                 time.sleep(0.1)
 
             else: # This method includes cases when i_y > gal_histogram[x,y], decided this was best until proven otherwise to maintain the amount of agns
@@ -103,16 +103,16 @@ def newMatchset():
                 gal_subset = gal_subset[gal_subset['mass'] <= ybins_gal[y+1]]  
 
                 master = pd.concat([master, agn_subset, gal_subset], ignore_index=True, sort=False) # Concats tables, index are ignore as ID is the identifier
-
-                print('\r',i_y,'AGNs and', gal_histogram[x,y], 'Galaxies at',[x,y],'                                                ', flush=True)
-                time.sleep(0.1)
+                matchesmade += 2*i_y
+                print('\r',i_y,'AGNs and', gal_histogram[x,y], 'Galaxies at',[x,y],'                 matches made: ',matchesmade,'  ',sep='',end='', flush = True)
+                time.sleep(0.1) # A note for another time: this whole progress thing would look alot nicer with the matches made bit at the front (not of particularly variable width)
 
             y+=1 # iterates y so the indices can be changed
 
         x+=1 
 
     master.info()
-    master.to_csv('Matched sets/Matched data10.csv')
+    #master.to_csv('Matched sets/Matched data10.csv')
 
 
 newMatchset()
