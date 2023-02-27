@@ -15,7 +15,7 @@ tables I want to do: Mass-SFR
 '''
 
 def unifunction(x,y):
-    data = pd.read_csv('Matched sets/Matched data2.csv',header = 0, delimiter=',')
+    data = pd.read_csv('Matched-2-catalogue/Set 1.csv',header = 0, delimiter=',')
 
     agns = data[data['AGN or not'] == 0]
     gals = data[data['AGN or not'] == 1]
@@ -29,4 +29,4 @@ def unifunction(x,y):
     plt.show()
 
 
-unifunction('zpdf','mass')
+unifunction('ra_1','dec_1')
