@@ -1,7 +1,8 @@
 import matplotlib.pyplot as plt
-import numpy as np
 from astropy.io import fits
 import pandas as pd
+from pandas import DataFrame as df
+import numpy as np
 
 
 
@@ -12,21 +13,52 @@ This is intended to be a graphing script, code may be compartmentalised into fun
 tables I want to do: Mass-SFR  
                      mass-redshift (again) [done]
                      Luminosity - redshift (maybe)
+                     log(ssfr) - log(Mstar)
+                     BoloL against black hole mass
 '''
+def logmoment(x):
+    y=[]
 
-def unifunction(x,y):
-    data = pd.read_csv('Matched-2-catalogue/Set 1.csv',header = 0, delimiter=',')
+    for i in x:
+        log = np.log10(i)
+        y.append(log)
+    return y 
+
+
+def ssfr_mass_graph(filenum):
+    data = pd.read_csv('Matched-2-catalogue/Set ' + str(filenum) + '.csv',header = 0, delimiter=',')
 
     agns = data[data['AGN or not'] == 0]
     gals = data[data['AGN or not'] == 1]
+    '''
+    x1 = agns['ssfr_best'].to_numpy()
+    x1 = logmoment(x1)
+    x2 = gals['ssfr_best'].to_numpy()
+    x2 = logmoment(x2)
+    '''
 
-    plt.scatter(x,y,c='b',s=2,data = agns)
-    plt.scatter(x,y,c='r',s=2,data = gals)
+    fig, ax = plt.subplots()
 
-    plt.xlabel(x)
-    plt.ylabel(y)
+    ax.scatter('mass_best','ssfr_best',c='b',s=8,data=agns,label='AGNs')
+    ax.scatter('mass_best','ssfr_best',c='r',s=8,data=gals,label='Galaxies')
+
+    ax.legend()
+
+    ax.set_title('Log of specific SFR against the Log of total stellar mass')
+
+    ax.set_xlabel('Total mass $Log_(10)(M_\odot)$')
+    ax.set_ylabel('Specific Star Forming Rate $Log_(10)$')
+    ax.set_ylim(top=-5,bottom=-20)
+    ax.set_xlim(left=8.5,right=12)
 
     plt.show()
 
+i = 1
+while i <= 10:
+    ssfr_mass_graph(i)
+    i+=1
 
-unifunction('ra_1','dec_1')
+
+
+
+
