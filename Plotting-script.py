@@ -64,7 +64,7 @@ def bolometric():
  
     #begin with finding the bolometric corrected luminosities of the galaxies 
     #import the correction table and get python to read ecah column
-    lxcorr_table = pd.read_csv('/Users/Jet26/Documents/Data/Graph plotting/lglx_kbol_tuv09.csv')
+    lxcorr_table = pd.read_csv('/Users/Owner/Documents/Coding/lglx_kbol_tuv09.csv')
     
     xp = lxcorr_table["LX_hard_corr"]
     #print(xp)
@@ -109,12 +109,31 @@ def bolometric():
             average = agns_useful.iloc[i,0] + agns_useful.iloc[i,1]
             avg_lum[i] = average/2 # takes the average of the two luminosities if theyre both present
 
-    agns_useful.assign(avg_lum=avg_lum)
+    agns_useful['avg_lum'] = avg_lum # Adds the list to the data frame as a column
 
     bhmass = []
-    for i in agns['mass_best']:
-        y = 1.12*i - 4.12
+    for i in agns_useful['mass']:
+        y = 1.12*i - 4.12 # Finds Black hole mass
         bhmass.append(y)
+
+    bolo_lum = []
+    for i_lum in agns_useful['avg_lum']:
+        bolo = np.interp(i_lum,xp,fp) # Interpolates luminosities to a correction table to find bolo luminosity
+        bolo_lum.append(bolo)
+
+
+    agns_useful['bhmass'] = bhmass
+    agns_useful['bolo_lum'] = bolo_lum # Adds these lists to the data frame as a table
+
+    fig, ax = plt.subplots() # Intend to make a plot with different colours for redshift bands
+                             # thinking 5 bands between 0.25 and 9, whatever spacing that is
+
+    ax.scatter('bhmass','bolo_lum',c='r',s=8,data=agns_useful)
+    ax.set_ylim(top=48,bottom=42) # this seems to be giving weird results? Doesnt seem to show any pattern when compared to other results
+
+    plt.show()
+
+
 
     
 bolometric()
