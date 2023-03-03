@@ -3,7 +3,7 @@ from astropy.io import fits
 import pandas as pd
 from pandas import DataFrame as df
 import numpy as np
-
+import seaborn as sns
 
 
 
@@ -26,6 +26,10 @@ def logmoment(x):
 
 
 def ssfr_mass_graph(filenum):
+    big_data = pd.read_csv('/Users/Jet26/Documents/Data/Graph plotting/LimitedData.csv',low_memory=False)
+
+    contour_data = big_data[['mass_best','ssfr_best']].copy()
+
     data = pd.read_csv('Matched-2-catalogue/Set ' + str(filenum) + '.csv',header = 0, delimiter=',')
 
     agns = data[data['AGN or not'] == 0]
@@ -39,17 +43,21 @@ def ssfr_mass_graph(filenum):
 
     fig, ax = plt.subplots()
 
-    ax.scatter('mass_best','sfr_best',c='b',s=8,data=agns,label='AGNs')
-    ax.scatter('mass_best','sfr_best',c='r',s=8,data=gals,label='Galaxies')
+    sns.kdeplot(data=contour_data,x='mass_best',y='ssfr_best',cmap='viridis',zorder=1)
+
+    ax.scatter('mass_best','ssfr_best',c='b',s=12,data=agns,marker='^',label='AGNs',zorder=2)
+    ax.scatter('mass_best','ssfr_best',c='r',s=12,data=gals,label='Galaxies',zorder=3)
 
     ax.legend()
 
-    ax.set_title('Log of specific SFR against the Log of total stellar mass')
-
-    ax.set_xlabel('Total mass $Log_(10)(M_\odot)$')
-    ax.set_ylabel('Specific Star Forming Rate $Log_(10)$')
-    #ax.set_ylim(top=-5,bottom=-20)
-    #ax.set_xlim(left=8.5,right=12)
+    ax.set_xlabel('Total stellar mass $Log_[10](M_\odot)$')
+    ax.set_ylabel('Specific Star Forming Rate $Log_[10]$')
+    ax.set_ylim(top=-5,bottom=-35)
+    ax.set_xlim(left=6.3,right=12)
+    #add background of wider cosmos galaxy samples - contour plot [DONE]
+    #histogram of ssfr and mass
+    #anderson-darling for ssfr
+    #save plots with overwrite mode
 
     plt.show()
 '''
@@ -64,13 +72,14 @@ def bolometric():
  
     #begin with finding the bolometric corrected luminosities of the galaxies 
     #import the correction table and get python to read ecah column
-    lxcorr_table = pd.read_csv('/Users/Owner/Documents/Coding/lglx_kbol_tuv09.csv')
+    lxcorr_table = pd.read_csv('/Users/Jet26/Documents/Data/Graph plotting/lglx_kbol_tuv09.csv')
     
     xp = lxcorr_table["LX_hard_corr"]
     #print(xp)
     fp = lxcorr_table["bolometric_correction"]
     #print(fp)
     
+
     lx_data_point = pd.read_csv('Matched-2-catalogue/Set 1.csv')
 
     agns = lx_data_point[lx_data_point['AGN or not'] == 0]
@@ -111,6 +120,8 @@ def bolometric():
 
     agns_useful['avg_lum'] = avg_lum # Adds the list to the data frame as a column
 
+    #if one take that, if the other take that one, not avg maybe
+
     bhmass = []
     for i in agns_useful['mass']:
         y = 1.12*i - 4.12 # Finds Black hole mass
@@ -119,24 +130,27 @@ def bolometric():
     bolo_lum = []
     for i_lum in agns_useful['avg_lum']:
         bolo = np.interp(i_lum,xp,fp) # Interpolates luminosities to a correction table to find bolo luminosity
-        bolo_lum.append(bolo)
+        
+        bolo_lum.append(np.log10(bolo)+i_lum)
 
 
     agns_useful['bhmass'] = bhmass
     agns_useful['bolo_lum'] = bolo_lum # Adds these lists to the data frame as a table
-
+    
     fig, ax = plt.subplots() # Intend to make a plot with different colours for redshift bands
                              # thinking 5 bands between 0.25 and 9, whatever spacing that is
 
     ax.scatter('bhmass','bolo_lum',c='r',s=8,data=agns_useful)
-    ax.set_ylim(top=48,bottom=42) # this seems to be giving weird results? Doesnt seem to show any pattern when compared to other results
+    #ax.set_ylim(top=60,bottom=30) # this seems to be giving weird results? Doesnt seem to show any pattern when compared to other results
 
+    ax.set_xlabel('Black hole mass')
+    ax.set_ylabel('Bolometric Luminosity')
+    
     plt.show()
 
 
 
-    
-bolometric()
+ssfr_mass_graph(1)
 
 
 # eddington lum:
