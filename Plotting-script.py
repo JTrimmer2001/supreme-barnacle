@@ -4,8 +4,9 @@ import pandas as pd
 from pandas import DataFrame as df
 import numpy as np
 import seaborn as sns
+import matplotlib
 
-
+matplotlib.rcParams.update({'font.size':16})
 
 '''
 This is intended to be a graphing script, code may be compartmentalised into functions but the functions should be reuseable easily
@@ -52,6 +53,8 @@ def ssfr_mass_graph(filenum,contour_data):
     fig, ax = plt.subplots() # This just initialises an instance for plotting, is a bit nicer than just using plt.plot or whatever
     # I honestly dont know why the fig, bit is needed but it doesnt seem to work without it????
 
+    plt.subplots_adjust(bottom=0.15,top=0.95,left=0.15,right=0.95)
+
     sns.kdeplot(data=contour_data,x='zpdf',y='mass_best',cmap='viridis',zorder=1) 
     # Seaborn (sns here) does contour plots really well, just needs an x and y input and its all sorted
     #In general, the 'data' parameter tells the function where to get data from, here it takes data from 'contour_data' with the x coords being
@@ -67,25 +70,24 @@ def ssfr_mass_graph(filenum,contour_data):
     # c is the colour, s is the size, marker is the shape of the point
     # some of these can take multiple different input formats, please see the matplotlib documentation for each function
 
-    ax.legend()
-
     ax.set_xlabel('Redshift')
-    ax.set_ylabel('Total stellar mass $Log_{10} M_{/odot}')
-    #ax.set_xlim(left=0.25,right=0.9)
+    ax.set_ylabel('$Log_{10}$ Total stellar mass $M_{/odot}$')
+    ax.set_ylim(top=11.6,bottom=6.5)
+    ax.set_xlim(left=0.24,right=0.91)
     #add background of wider cosmos galaxy samples - contour plot [DONE]
     #histogram of ssfr and mass
     #anderson-darling for ssfr
     #save plots with overwrite mode
 
-    plt.savefig('Plots/zpdf-stellarmass/set ' + str(filenum) + '.png')
+    plt.savefig('Plots/ssfr-stellarmass/set ' + str(filenum) + '.png')
     plt.show()
-'''
+
 i = 1
 big_data = getbigdata('zpdf','mass_best')
 while i <= 10:
     ssfr_mass_graph(i,big_data)
     i+=1
-'''
+
 
 
 def bolometric(filenum):
@@ -174,7 +176,7 @@ def bolometric(filenum):
 
     for i in ratios:
         x = np.linspace(5.5,9,100)
-        
+
 
     ax.set_xlabel('Black hole mass $Log_{10}$ $M_{BH}/M_{/odot}$')
     ax.set_ylabel('Bolometric Luminosity $Log_{10}$ $L_{bol}$')
@@ -183,7 +185,7 @@ def bolometric(filenum):
     
     plt.show()
 
-bolometric(1)
+#bolometric(1)
 
 
 # eddington lum:
