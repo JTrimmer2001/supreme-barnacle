@@ -24,16 +24,24 @@ def logmoment(x):
         y.append(log)
     return y 
 
-
-def ssfr_mass_graph(filenum):
+def getbigdata(x,y):
     big_data = pd.read_csv('/Users/Jet26/Documents/Data/Graph plotting/LimitedData.csv',low_memory=False)
 
-    contour_data = big_data[['mass_best','ssfr_best']].copy()
+        #On the above function, low_memory was used to suppress an error so it stopped coming up
+        # I believe it removes a memory cap for the pandas function, so if youre using a computer with low memory capacity maybe take this bit out?
+
+    limited_data = big_data.filter([x,y], axis=1)
+    
+    return(limited_data)
+
+def ssfr_mass_graph(filenum,contour_data): 
 
     data = pd.read_csv('Matched-2-catalogue/Set ' + str(filenum) + '.csv',header = 0, delimiter=',')
 
     agns = data[data['AGN or not'] == 0]
-    gals = data[data['AGN or not'] == 1]
+    gals = data[data['AGN or not'] == 1] # Pandas operation to make two data frames from the full data frame
+                                         # Pandas is really nice like that, basically just a filter but it takes the rest of the data too
+                                         # no need to match the data back up afterwards
     '''
     x1 = agns['ssfr_best'].to_numpy()
     x1 = logmoment(x1)
@@ -41,34 +49,46 @@ def ssfr_mass_graph(filenum):
     x2 = logmoment(x2)
     '''
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots() # This just initialises an instance for plotting, is a bit nicer than just using plt.plot or whatever
+    # I honestly dont know why the fig, bit is needed but it doesnt seem to work without it????
 
-    sns.kdeplot(data=contour_data,x='mass_best',y='ssfr_best',cmap='viridis',zorder=1)
+    sns.kdeplot(data=contour_data,x='zpdf',y='mass_best',cmap='viridis',zorder=1) 
+    # Seaborn (sns here) does contour plots really well, just needs an x and y input and its all sorted
+    #In general, the 'data' parameter tells the function where to get data from, here it takes data from 'contour_data' with the x coords being
+    #   'mass_best' and y being 'ssfr_best', both of these are column names from the 'contour_data' data frame
 
-    ax.scatter('mass_best','ssfr_best',c='b',s=12,data=agns,marker='^',label='AGNs',zorder=2)
-    ax.scatter('mass_best','ssfr_best',c='r',s=12,data=gals,label='Galaxies',zorder=3)
+    #zorder determines which plot is made first, here the lines are in the background so zorder is 1
+    #cmap just sets a colour scheme for the contour lines, if you want a different map theres a list here: https://matplotlib.org/stable/gallery/color/colormap_reference.html
+
+    ax.scatter('zpdf_1','mass_best',c='b',s=12,data=agns,marker='^',label='AGNs',zorder=2)
+    ax.scatter('zpdf_1','mass_best',c='r',s=12,data=gals,label='Galaxies',zorder=3)
+    # This does the scattering of the agn and non-agn points
+    # All the formatting is done in the arguments (c,s,data, etc)
+    # c is the colour, s is the size, marker is the shape of the point
+    # some of these can take multiple different input formats, please see the matplotlib documentation for each function
 
     ax.legend()
 
-    ax.set_xlabel('Total stellar mass $Log_[10](M_\odot)$')
-    ax.set_ylabel('Specific Star Forming Rate $Log_[10]$')
-    ax.set_ylim(top=-5,bottom=-35)
-    ax.set_xlim(left=6.3,right=12)
+    ax.set_xlabel('Redshift')
+    ax.set_ylabel('Total stellar mass $Log_{10} M_{/odot}')
+    #ax.set_xlim(left=0.25,right=0.9)
     #add background of wider cosmos galaxy samples - contour plot [DONE]
     #histogram of ssfr and mass
     #anderson-darling for ssfr
     #save plots with overwrite mode
 
+    plt.savefig('Plots/zpdf-stellarmass/set ' + str(filenum) + '.png')
     plt.show()
 '''
 i = 1
+big_data = getbigdata('zpdf','mass_best')
 while i <= 10:
-    ssfr_mass_graph(i)
+    ssfr_mass_graph(i,big_data)
     i+=1
 '''
 
 
-def bolometric():
+def bolometric(filenum):
  
     #begin with finding the bolometric corrected luminosities of the galaxies 
     #import the correction table and get python to read ecah column
@@ -80,10 +100,9 @@ def bolometric():
     #print(fp)
     
 
-    lx_data_point = pd.read_csv('Matched-2-catalogue/Set 1.csv')
+    lx_data_point = pd.read_csv('Matched-2-catalogue/Set '+str(filenum)+'.csv')
 
     agns = lx_data_point[lx_data_point['AGN or not'] == 0]
-    gals = lx_data_point[lx_data_point['AGN or not'] == 1]
 
 
     '''Ill put it here so its easier to see in a nice bright colour:
@@ -100,8 +119,15 @@ def bolometric():
         Then obviously just plot the two together, sort the data into smaller redshift bins'''
     
     agns_useful = agns[['log_final_lum_xmm','log_final_lum_chandra','mass','zpdf_2']].copy()
-    gals_useful = gals[['log_final_lum_xmm','log_final_lum_chandra','mass','zpdf_2']].copy()
+    
+    '''making redshift bins
 
+    redhsift1 = agns[agns['zpdf_2']<0.38 & agns['zpdf_2']>=0.25]
+    redshift2 = agns[agns['zpdf_2']<0.51 & agns['zpdf_2']>=0.38]
+    redshift3 = agns[agns['zpdf_2']<0.64 & agns['zpdf_2']>=0.51]
+    redshift4 = agns[agns['zpdf_2']<0.77 & agns['zpdf_2']>=0.64]
+    redshift5 = agns[agns['zpdf_2']<0.9 & agns['zpdf_2']>=0.77]
+    '''
     #Log_(BH) = 1.12Log(M*)-4.12
 
     length = agns_useful.shape
@@ -115,8 +141,7 @@ def bolometric():
             avg_lum[i] = agns_useful.iloc[i,0] #If chandra lum is nan, takes xmm luminosity
 
         else:
-            average = agns_useful.iloc[i,0] + agns_useful.iloc[i,1]
-            avg_lum[i] = average/2 # takes the average of the two luminosities if theyre both present
+            avg_lum[i] = agns_useful.iloc[i,1] # takes the average of the two luminosities if theyre both present
 
     agns_useful['avg_lum'] = avg_lum # Adds the list to the data frame as a column
 
@@ -136,6 +161,8 @@ def bolometric():
 
     agns_useful['bhmass'] = bhmass
     agns_useful['bolo_lum'] = bolo_lum # Adds these lists to the data frame as a table
+
+    ratios = [1,0.1,0.01,0.001]
     
     fig, ax = plt.subplots() # Intend to make a plot with different colours for redshift bands
                              # thinking 5 bands between 0.25 and 9, whatever spacing that is
@@ -143,14 +170,20 @@ def bolometric():
     ax.scatter('bhmass','bolo_lum',c='r',s=8,data=agns_useful)
     #ax.set_ylim(top=60,bottom=30) # this seems to be giving weird results? Doesnt seem to show any pattern when compared to other results
 
-    ax.set_xlabel('Black hole mass')
-    ax.set_ylabel('Bolometric Luminosity')
+    ratioline = []
+
+    for i in ratios:
+        x = np.linspace(5.5,9,100)
+        
+
+    ax.set_xlabel('Black hole mass $Log_{10}$ $M_{BH}/M_{/odot}$')
+    ax.set_ylabel('Bolometric Luminosity $Log_{10}$ $L_{bol}$')
+    ax.set_xlim(left=5.84,right=8.74)
+    ax.set_ylim(bottom=44.63,top=46.82)
     
     plt.show()
 
-
-
-ssfr_mass_graph(1)
+bolometric(1)
 
 
 # eddington lum:
