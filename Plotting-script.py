@@ -71,7 +71,7 @@ def ssfr_mass_graph(filenum,contour_data):
     # some of these can take multiple different input formats, please see the matplotlib documentation for each function
 
     ax.set_xlabel('$Log_{10}$ Total stellar mass $M_{\odot}$')
-    ax.set_ylabel('SSFR $(year^{-1})$')
+    ax.set_ylabel('SSFR $year^{-1}$')
     ax.set_ylim(top=-5,bottom=-35)
     ax.set_xlim(left=6.5,right=11.8)
     #add background of wider cosmos galaxy samples - contour plot [DONE]
