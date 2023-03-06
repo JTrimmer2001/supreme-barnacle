@@ -55,7 +55,7 @@ def ssfr_mass_graph(filenum,contour_data):
 
     plt.subplots_adjust(bottom=0.15,top=0.95,left=0.15,right=0.95)
 
-    sns.kdeplot(data=contour_data,x='zpdf',y='mass_best',cmap='viridis',zorder=1) 
+    sns.kdeplot(data=contour_data,x='mass_best',y='ssfr_best',cmap='viridis',zorder=1) 
     # Seaborn (sns here) does contour plots really well, just needs an x and y input and its all sorted
     #In general, the 'data' parameter tells the function where to get data from, here it takes data from 'contour_data' with the x coords being
     #   'mass_best' and y being 'ssfr_best', both of these are column names from the 'contour_data' data frame
@@ -63,17 +63,17 @@ def ssfr_mass_graph(filenum,contour_data):
     #zorder determines which plot is made first, here the lines are in the background so zorder is 1
     #cmap just sets a colour scheme for the contour lines, if you want a different map theres a list here: https://matplotlib.org/stable/gallery/color/colormap_reference.html
 
-    ax.scatter('zpdf_1','mass_best',c='b',s=12,data=agns,marker='^',label='AGNs',zorder=2)
-    ax.scatter('zpdf_1','mass_best',c='r',s=12,data=gals,label='Galaxies',zorder=3)
+    ax.scatter('mass_best','ssfr_best',c='b',s=12,data=agns,marker='^',label='AGNs',zorder=2)
+    ax.scatter('mass_best','ssfr_best',c='r',s=12,data=gals,label='Galaxies',zorder=3)
     # This does the scattering of the agn and non-agn points
     # All the formatting is done in the arguments (c,s,data, etc)
     # c is the colour, s is the size, marker is the shape of the point
     # some of these can take multiple different input formats, please see the matplotlib documentation for each function
 
-    ax.set_xlabel('Redshift')
-    ax.set_ylabel('$Log_{10}$ Total stellar mass $M_{/odot}$')
-    ax.set_ylim(top=11.6,bottom=6.5)
-    ax.set_xlim(left=0.24,right=0.91)
+    ax.set_xlabel('$Log_{10}$ Total stellar mass $M_{\odot}$')
+    ax.set_ylabel('SSFR $(year^{-1})$')
+    ax.set_ylim(top=-5,bottom=-35)
+    ax.set_xlim(left=6.5,right=11.8)
     #add background of wider cosmos galaxy samples - contour plot [DONE]
     #histogram of ssfr and mass
     #anderson-darling for ssfr
@@ -83,7 +83,7 @@ def ssfr_mass_graph(filenum,contour_data):
     plt.show()
 
 i = 1
-big_data = getbigdata('zpdf','mass_best')
+big_data = getbigdata('mass_best','ssfr_best')
 while i <= 10:
     ssfr_mass_graph(i,big_data)
     i+=1
