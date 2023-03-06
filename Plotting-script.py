@@ -76,8 +76,8 @@ def ssfr_mass_graph(filenum,contour_data):
     ax.set_xlim(left=6.5,right=11.8)
     #add background of wider cosmos galaxy samples - contour plot [DONE]
     #histogram of ssfr and mass
-    #anderson-darling for ssfr
-    #save plots with overwrite mode
+    #anderson-darling for ssfr [done]
+    #save plots with overwrite mode [done]
 
     plt.savefig('Plots/ssfr-stellarmass/set ' + str(filenum) + '.png')
     plt.show()
