@@ -42,10 +42,25 @@ print(res_sfr)
 
 '''
 
-data = pd.read_csv('Matched-2-catalogue/Set 5.csv',header = 0, delimiter=',')
-agns = data[data['AGN or not'] == 0]
-gals = data[data['AGN or not'] == 1]
+data = pd.read_csv('Radio sorted.csv')
 
-ssfr_matched = stats.anderson_ksamp((agns['ssfr_best'],gals['ssfr_best']))
+loudness_index = data.columns.get_loc('Radio Loud')
+ssfr_index = data.columns.get_loc('ssfr_best')
+mass_index = data.columns.get_loc('mass_best')
+length = data.shape
+
+Loud = []
+quiet = []
+
+for i in range(length[0]):
+    if np.isnan(data.iloc[i,loudness_index]) == True:
+        quiet.append(data.iloc[i,ssfr_index])
+
+    elif np.isnan(data.iloc[i,loudness_index])==False:
+        Loud.append(data.iloc[i,ssfr_index])
+        
+
+
+ssfr_matched = stats.anderson_ksamp((quiet,Loud))
 
 print(ssfr_matched)

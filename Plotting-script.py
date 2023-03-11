@@ -81,13 +81,13 @@ def ssfr_mass_graph(filenum,contour_data):
 
     plt.savefig('Plots/ssfr-stellarmass/set ' + str(filenum) + '.png')
     plt.show()
-
+'''
 i = 1
 big_data = getbigdata('mass_best','ssfr_best')
 while i <= 10:
     ssfr_mass_graph(i,big_data)
     i+=1
-
+'''
 
 
 def bolometric(filenum):
@@ -139,11 +139,9 @@ def bolometric(filenum):
         if np.isnan(agns_useful.iloc[i,0])==True: #Checks if the xmm luminosity is nan
             avg_lum[i] = agns_useful.iloc[i,1] #If xmm lum is nan at this index, takes into account the chandra lum
 
-        elif np.isnan(agns_useful.iloc[i,1])==True:
+        else:
             avg_lum[i] = agns_useful.iloc[i,0] #If chandra lum is nan, takes xmm luminosity
 
-        else:
-            avg_lum[i] = agns_useful.iloc[i,1] # takes the average of the two luminosities if theyre both present
 
     agns_useful['avg_lum'] = avg_lum # Adds the list to the data frame as a column
 
@@ -169,8 +167,10 @@ def bolometric(filenum):
     fig, ax = plt.subplots() # Intend to make a plot with different colours for redshift bands
                              # thinking 5 bands between 0.25 and 9, whatever spacing that is
 
-    ax.scatter('bhmass','bolo_lum',c='r',s=8,data=agns_useful)
-    #ax.set_ylim(top=60,bottom=30) # this seems to be giving weird results? Doesnt seem to show any pattern when compared to other results
+    for i in range(length[0]):
+
+        if agns_useful.iloc[i, 3] <= 0.4:
+            ax.scatter()
 
     ratioline = []
 
@@ -185,7 +185,7 @@ def bolometric(filenum):
     
     plt.show()
 
-#bolometric(1)
+bolometric(1)
 
 
 # eddington lum:
