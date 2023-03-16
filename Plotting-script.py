@@ -79,15 +79,9 @@ def ssfr_mass_graph(filenum,contour_data):
     #anderson-darling for ssfr [done]
     #save plots with overwrite mode [done]
 
-<<<<<<< HEAD
-    plt.savefig('Plots/ssfr-stellarmass/set ' + str(filenum) + '.png')
-    plt.show()
-'''
-=======
     plt.savefig('Plots/zpdf-ssfr/set ' + str(filenum) + '.png')
     #plt.show()
-
->>>>>>> 6e2ca3f5034c5abfe42e74c4401a694bd31128ae
+'''
 i = 1
 big_data = getbigdata('zpdf','ssfr_best')
 while i <= 10:
