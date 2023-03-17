@@ -56,7 +56,7 @@ def ssfr_mass_graph(filenum,contour_data):
 
     plt.subplots_adjust(bottom=0.15,top=0.95,left=0.15,right=0.95)
 
-    sns.kdeplot(data=contour_data,x='mass_best',y='sfr_best',cmap='viridis',zorder=1) 
+    sns.kdeplot(data=contour_data,x='zpdf',y='ssfr_best',cmap='viridis',zorder=1) 
     # Seaborn (sns here) does contour plots really well, just needs an x and y input and its all sorted
     #In general, the 'data' parameter tells the function where to get data from, here it takes data from 'contour_data' with the x coords being
     #   'mass_best' and y being 'ssfr_best', both of these are column names from the 'contour_data' data frame
@@ -64,17 +64,17 @@ def ssfr_mass_graph(filenum,contour_data):
     #zorder determines which plot is made first, here the lines are in the background so zorder is 1
     #cmap just sets a colour scheme for the contour lines, if you want a different map theres a list here: https://matplotlib.org/stable/gallery/color/colormap_reference.html
 
-    ax.scatter('mass_best','sfr_best',c='b',s=13,data=agns,marker='^',label='AGNs',zorder=2)
-    ax.scatter('mass_best','sfr_best',c='r',s=13,data=gals,label='Galaxies',zorder=3)
+    ax.scatter('zpdf_1','ssfr_best',c='b',s=13,data=agns,marker='^',label='AGNs',zorder=2)
+    ax.scatter('zpdf_1','ssfr_best',c='r',s=13,data=gals,label='Galaxies',zorder=3)
     # This does the scattering of the agn and non-agn points
     # All the formatting is done in the arguments (c,s,data, etc)
     # c is the colour, s is the size, marker is the shape of the point
     # some of these can take multiple different input formats, please see the matplotlib documentation for each function
 
-    ax.set_xlabel('Total Mass $Log_{10}M_{\odot}$')
-    ax.set_ylabel('SFR $Log_{10} year^{-1}$')
-    ax.set_ylim(bottom=-10)
-    ax.set_xlim(left=7,right=11.8)
+    ax.set_xlabel('Redshift')
+    ax.set_ylabel('SSFR $Log_{10} year^{-1}$')
+    ax.set_ylim(bottom=-20)
+    ax.set_xlim(left = 0.25, right = 0.9)
     #add background of wider cosmos galaxy samples - contour plot [DONE]
     #histogram of ssfr and mass
     #anderson-darling for ssfr [done]
@@ -82,14 +82,14 @@ def ssfr_mass_graph(filenum,contour_data):
 
     ax.legend(loc='lower left')
 
-    plt.savefig('Plots/sfr-stellarmass/set ' + str(filenum) + '.png')
+    plt.savefig('Plots/zpdf-ssfr/set ' + str(filenum) + '.png')
     #plt.show()
 
-'''i = 1
-big_data = getbigdata('mass_best','sfr_best')
+i = 1
+big_data = getbigdata('zpdf','ssfr_best')
 while i <= 10:
     ssfr_mass_graph(i,big_data)
-    i+=1'''
+    i+=1
 
 
 
@@ -230,4 +230,4 @@ def doublehistogram():
     plt.show()
 
     
-doublehistogram()
+#doublehistogram()
