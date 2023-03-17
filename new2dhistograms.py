@@ -33,10 +33,10 @@ mrescale=w2*100
 
 fig, ax = plt.subplots(2,2,width_ratios=[0.7,0.3],height_ratios=[0.3,0.7])
 
-pcm = ax[1,0].hist2d('zpdf','mass_best',bins=[binsx,binsy],data= all_useful,cmap='Greys_r')
+pcm = ax[1,0].hist2d('zpdf','mass_best',bins=[binsx,binsy],data= all_useful,cmap='Greys')
 scatter1 = ax[1,0].scatter('zpdf','mass_best',data=agn_data,c='r',s=8,label='AGNs')
 ax[1,0].set_xlabel('redshift')
-ax[1,0].set_ylabel('mass')
+ax[1,0].set_ylabel('Mass $Log_{10}M_{\odot}$')
 xlim = ax[1,0].get_xlim()
 ylim = ax[1,0].get_ylim()
 

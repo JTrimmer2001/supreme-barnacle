@@ -56,7 +56,7 @@ def ssfr_mass_graph(filenum,contour_data):
 
     plt.subplots_adjust(bottom=0.15,top=0.95,left=0.15,right=0.95)
 
-    sns.kdeplot(data=contour_data,x='mass_best',y='ssfr_best',cmap='viridis',zorder=1) 
+    sns.kdeplot(data=contour_data,x='mass_best',y='sfr_best',cmap='viridis',zorder=1) 
     # Seaborn (sns here) does contour plots really well, just needs an x and y input and its all sorted
     #In general, the 'data' parameter tells the function where to get data from, here it takes data from 'contour_data' with the x coords being
     #   'mass_best' and y being 'ssfr_best', both of these are column names from the 'contour_data' data frame
@@ -64,16 +64,16 @@ def ssfr_mass_graph(filenum,contour_data):
     #zorder determines which plot is made first, here the lines are in the background so zorder is 1
     #cmap just sets a colour scheme for the contour lines, if you want a different map theres a list here: https://matplotlib.org/stable/gallery/color/colormap_reference.html
 
-    ax.scatter('mass_best','ssfr_best',c='b',s=13,data=agns,marker='^',label='AGNs',zorder=2)
-    ax.scatter('mass_best','ssfr_best',c='r',s=13,data=gals,label='Galaxies',zorder=3)
+    ax.scatter('mass_best','sfr_best',c='b',s=13,data=agns,marker='^',label='AGNs',zorder=2)
+    ax.scatter('mass_best','sfr_best',c='r',s=13,data=gals,label='Galaxies',zorder=3)
     # This does the scattering of the agn and non-agn points
     # All the formatting is done in the arguments (c,s,data, etc)
     # c is the colour, s is the size, marker is the shape of the point
     # some of these can take multiple different input formats, please see the matplotlib documentation for each function
 
     ax.set_xlabel('Total Mass $Log_{10}M_{\odot}$')
-    ax.set_ylabel('SSFR $Log_{10} year^{-1}$')
-    ax.set_ylim(top=-5,bottom=-20)
+    ax.set_ylabel('SFR $Log_{10} year^{-1}$')
+    ax.set_ylim(bottom=-10)
     ax.set_xlim(left=7,right=11.8)
     #add background of wider cosmos galaxy samples - contour plot [DONE]
     #histogram of ssfr and mass
@@ -82,11 +82,11 @@ def ssfr_mass_graph(filenum,contour_data):
 
     ax.legend(loc='lower left')
 
-    plt.savefig('Plots/ssfr-stellarmass/set ' + str(filenum) + '.png')
+    plt.savefig('Plots/sfr-stellarmass/set ' + str(filenum) + '.png')
     #plt.show()
 
 '''i = 1
-big_data = getbigdata('mass_best','ssfr_best')
+big_data = getbigdata('mass_best','sfr_best')
 while i <= 10:
     ssfr_mass_graph(i,big_data)
     i+=1'''
@@ -195,7 +195,7 @@ def bolometric(filenum):
 def doublehistogram():
     '''Need a pair of histograms demonstrating that the matching of the data worked properly'''
 
-    plt.rcParams['figure.figsize'] = [10,7]
+    #plt.rcParams['figure.figsize'] = [10,7]
     plt.rcParams['font.size'] = 13
 
     data = pd.read_csv('Matched-2-catalogue/Set 1.csv')
@@ -217,9 +217,10 @@ def doublehistogram():
     '''
     fig, [ax1,ax2] = plt.subplots(1,2)
 
-    ax1.hist('mass_best',color='b',bins=bins_mass[1::2],data=agn,histtype='step')
-    ax1.hist('mass_best',color='r',bins=bins_mass[1::2],data=gal,histtype='step')
+    ax1.hist('mass_best',color='b',bins=bins_mass[1::2],data=agn,histtype='step',label='AGNs')
+    ax1.hist('mass_best',color='r',bins=bins_mass[1::2],data=gal,histtype='step',label='non-AGNs')
     ax1.set_xlabel('Mass $M_{\odot}$')
+    ax1.legend(bbox_to_anchor=(0.5, 1.02, 1., .102), loc='lower left', mode="expand", borderaxespad=0.,ncol = 2)
 
     ax2.hist('zpdf_1',color='b',bins=bins_zpdf[1::2],data=agn,histtype='step')
     ax2.hist('zpdf_1',color='r',bins=bins_zpdf[1::2],data=gal,histtype='step')

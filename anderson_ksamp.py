@@ -41,26 +41,72 @@ input()
 print(res_sfr)
 
 '''
+def radiosorted():
+    data = pd.read_csv('Radio sorted.csv')
 
-data = pd.read_csv('Radio sorted.csv')
+    loudness_index = data.columns.get_loc('Radio Loud')
+    ssfr_index = data.columns.get_loc('ssfr_best')
+    mass_index = data.columns.get_loc('mass_best')
+    length = data.shape
 
-loudness_index = data.columns.get_loc('Radio Loud')
-ssfr_index = data.columns.get_loc('ssfr_best')
-mass_index = data.columns.get_loc('mass_best')
-length = data.shape
+    Loud = []
+    quiet = []
 
-Loud = []
-quiet = []
+    for i in range(length[0]):
+        if np.isnan(data.iloc[i,loudness_index]) == True:
+            quiet.append(data.iloc[i,ssfr_index])
 
-for i in range(length[0]):
-    if np.isnan(data.iloc[i,loudness_index]) == True:
-        quiet.append(data.iloc[i,ssfr_index])
-
-    elif np.isnan(data.iloc[i,loudness_index])==False:
-        Loud.append(data.iloc[i,ssfr_index])
-        
+        elif np.isnan(data.iloc[i,loudness_index])==False:
+            Loud.append(data.iloc[i,ssfr_index])
+            
 
 
-ssfr_matched = stats.anderson_ksamp((quiet,Loud))
+    ssfr_matched = stats.anderson_ksamp((quiet,Loud))
 
-print(ssfr_matched)
+    print(ssfr_matched)
+
+def matchedstats(set=False):
+    p_sfr = []
+    p_ssfr = []
+    p_mass = []
+    p_zpdf = []
+
+    if set==False:
+        i = 1
+
+        while i <= 10:
+            data = pd.read_csv('Matched-2-catalogue/Set ' + str(i) + '.csv')
+
+            agn_data = data[data['AGN or not'] == 0]
+            gal_data = data[data['AGN or not'] == 1]
+
+            p_sfr.append(stats.anderson_ksamp((agn_data['sfr_best'],gal_data['sfr_best'])).significance_level)
+            p_ssfr.append(stats.anderson_ksamp((agn_data['ssfr_best'],gal_data['ssfr_best'])).significance_level)
+            p_mass.append(stats.anderson_ksamp((agn_data['mass_best'],gal_data['mass_best'])).significance_level)
+            p_zpdf.append(stats.anderson_ksamp((agn_data['zpdf_1'],gal_data['zpdf_1'])).significance_level)
+
+            i+=1
+
+    else:
+        data = pd.read_csv('Matched-2-catalogue/Set ' + str(set) + '.csv')
+
+        agn_data = data[data['AGN or not'] == 0]
+        gal_data = data[data['AGN or not'] == 1]
+
+        p_sfr.append(stats.anderson_ksamp((agn_data['sfr_best'],gal_data['sfr_best'])).significance_level)
+        p_ssfr.append(stats.anderson_ksamp((agn_data['ssfr_best'],gal_data['ssfr_best'])).significance_level)
+        p_mass.append(stats.anderson_ksamp((agn_data['mass_best'],gal_data['mass_best'])).significance_level)
+        p_zpdf.append(stats.anderson_ksamp((agn_data['zpdf_1'],gal_data['zpdf_1'])).significance_level)
+
+    print('sfr pvalues:  \b')
+    print(p_sfr)
+    print('ssfr pvalues: \b')
+    print(p_ssfr)
+    print('mass pvalues: \b')
+    print(p_mass)
+    print('zpdf pvalues: \b')
+    print(p_zpdf)
+
+matchedstats()
+
+
