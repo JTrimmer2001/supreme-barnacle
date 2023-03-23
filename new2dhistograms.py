@@ -2,6 +2,7 @@ import basic_stats as bs
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 plt.rcParams['figure.figsize'] = [10,7]
@@ -33,15 +34,18 @@ mrescale=w2*100
 
 fig, ax = plt.subplots(2,2,width_ratios=[0.7,0.3],height_ratios=[0.3,0.7])
 
-pcm = ax[1,0].hist2d('zpdf','mass_best',bins=[binsx,binsy],data= all_useful,cmap='Greys')
-scatter1 = ax[1,0].scatter('zpdf','mass_best',data=agn_data,c='r',s=8,label='AGNs')
+pcm = ax[1,0].hist2d('zpdf','mass_best',bins=[binsx,binsy],data= all_useful,cmap='Greys_r')
+divider = make_axes_locatable(ax[1,0])
+cax=divider.append_axes('right',size='5%',pad=0.04)
+fig.colorbar(pcm[3],cax=cax)
+scatter1 = ax[1,0].scatter('zpdf','mass_best',data=agn_data,c='r',s=8,label='Active galaxies')
 ax[1,0].set_xlabel('redshift')
 ax[1,0].set_ylabel('Mass $Log_{10}M_{\odot}$')
 xlim = ax[1,0].get_xlim()
 ylim = ax[1,0].get_ylim()
 
-hist1 = ax[0,0].hist(agn_data['zpdf'],binsx,histtype='step',color='b',label='AGNs (x100)',weights=zrescale)
-hist2 = ax[0,0].hist(nonagn_useful['zpdf'],binsx,histtype='step',color='r',label='non AGNs')
+hist1 = ax[0,0].hist(agn_data['zpdf'],binsx,histtype='step',color='b',label='Active galaxies (x100)',weights=zrescale)
+hist2 = ax[0,0].hist(nonagn_useful['zpdf'],binsx,histtype='step',color='r',label='Inactive galaxies')
 ax[0,0].set_xlim(xlim)
 ax[0,0].set_xticks([])
 ax[0,0].set_yticks([])

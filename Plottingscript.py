@@ -27,7 +27,7 @@ def logmoment(x):
     return y 
 
 def getbigdata(x,y):
-    big_data = pd.read_csv("/Users/Jet26/Documents/Data/Graph plotting/LimitedData.csv",low_memory=False)
+    big_data = pd.read_csv("/Users/Owner/Documents/Coding/LimitedData.csv",low_memory=False)
 
         #On the above function, low_memory was used to suppress an error so it stopped coming up
         # I believe it removes a memory cap for the pandas function, so if youre using a computer with low memory capacity maybe take this bit out?
@@ -56,7 +56,7 @@ def ssfr_mass_graph(filenum,contour_data):
 
     plt.subplots_adjust(bottom=0.15,top=0.95,left=0.15,right=0.95)
 
-    sns.kdeplot(data=contour_data,x='zpdf',y='ssfr_best',cmap='viridis',zorder=1) 
+    sns.kdeplot(data=contour_data,x='zpdf',y='mass_best',cmap='viridis',zorder=1)
     # Seaborn (sns here) does contour plots really well, just needs an x and y input and its all sorted
     #In general, the 'data' parameter tells the function where to get data from, here it takes data from 'contour_data' with the x coords being
     #   'mass_best' and y being 'ssfr_best', both of these are column names from the 'contour_data' data frame
@@ -64,17 +64,25 @@ def ssfr_mass_graph(filenum,contour_data):
     #zorder determines which plot is made first, here the lines are in the background so zorder is 1
     #cmap just sets a colour scheme for the contour lines, if you want a different map theres a list here: https://matplotlib.org/stable/gallery/color/colormap_reference.html
 
-    ax.scatter('zpdf_1','ssfr_best',c='b',s=13,data=agns,marker='^',label='AGNs',zorder=2)
-    ax.scatter('zpdf_1','ssfr_best',c='r',s=13,data=gals,label='Galaxies',zorder=3)
+    a,b = np.polyfit(agns['zpdf_1'],agns['ssfr_best'],1)
+    c,d = np.polyfit(gals['zpdf_1'],gals['ssfr_best'],1)
+
+    x = np.linspace(6.5,13,200)
+
+    '''ax.plot(x,a*x+b,c='xkcd:light blue',linestyle='--')
+    ax.plot(x,c*x+d,c='xkcd:light red',linestyle='--')'''
+
+    ax.scatter('zpdf_1','mass_best',c='b',s=13,data=agns,marker='^',label='Active galaxies',zorder=2)
+    ax.scatter('zpdf_1','mass_best',c='r',s=13,data=gals,label='Inactive galaxies',zorder=3)
     # This does the scattering of the agn and non-agn points
     # All the formatting is done in the arguments (c,s,data, etc)
     # c is the colour, s is the size, marker is the shape of the point
     # some of these can take multiple different input formats, please see the matplotlib documentation for each function
 
     ax.set_xlabel('Redshift')
-    ax.set_ylabel('SSFR $Log_{10} year^{-1}$')
-    ax.set_ylim(bottom=-20)
-    ax.set_xlim(left = 0.25, right = 0.9)
+    ax.set_ylabel('Total stellar mass $Log_{10} M_{\odot}')
+    #ax.set_ylim(bottom=-20)
+    ax.set_xlim(left=0.25, right=0.9)
     #add background of wider cosmos galaxy samples - contour plot [DONE]
     #histogram of ssfr and mass
     #anderson-darling for ssfr [done]
@@ -82,14 +90,14 @@ def ssfr_mass_graph(filenum,contour_data):
 
     ax.legend(loc='lower left')
 
-    plt.savefig('Plots/zpdf-ssfr/set ' + str(filenum) + '.png')
+    plt.savefig('Plots/zpdf-stellarmass/set ' + str(filenum) + '.png')
     #plt.show()
 
-i = 1
-big_data = getbigdata('zpdf','ssfr_best')
+'''i = 1
+big_data = getbigdata('zpdf','mass_best')
 while i <= 10:
     ssfr_mass_graph(i,big_data)
-    i+=1
+    i+=1'''
 
 
 
@@ -203,8 +211,8 @@ def doublehistogram():
     agn = data[data['AGN or not'] == 0]
     gal = data[data['AGN or not'] == 1]
     
-    w1,w2,bins_mass = bs.weight_dist(agn['mass_best'],gal['mass_best'],return_bins=True)
-    w1,w2,bins_zpdf = bs.weight_dist(agn['zpdf_1'],gal['zpdf_1'],return_bins=True)
+    w1,w2,bins_mass = bs.weight_dist(agn['sfr_best'],gal['sfr_best'],return_bins=True)
+    w1,w2,bins_zpdf = bs.weight_dist(agn['ssfr_best'],gal['ssfr_best'],return_bins=True)
     '''
     print(agn['mass_best'].max(),agn['mass_best'].min())
     print(gal['mass_best'].max(),gal['mass_best'].min())
@@ -217,17 +225,17 @@ def doublehistogram():
     '''
     fig, [ax1,ax2] = plt.subplots(1,2)
 
-    ax1.hist('mass_best',color='b',bins=bins_mass[1::2],data=agn,histtype='step',label='AGNs')
-    ax1.hist('mass_best',color='r',bins=bins_mass[1::2],data=gal,histtype='step',label='non-AGNs')
-    ax1.set_xlabel('Mass $M_{\odot}$')
-    ax1.legend(bbox_to_anchor=(0.5, 1.02, 1., .102), loc='lower left', mode="expand", borderaxespad=0.,ncol = 2)
+    ax1.hist('sfr_best',color='b',bins=bins_mass[1::2],data=agn,histtype='step',label='Active galaxies')
+    ax1.hist('sfr_best',color='r',bins=bins_mass[1::2],data=gal,histtype='step',label='Inactive galaxies')
+    ax1.set_xlabel('SFR $Log_{10} year^{-1}$')
+    ax1.legend(bbox_to_anchor=(0.1, 1.02, 2., .102), loc='lower left', mode="expand", borderaxespad=0.,ncol = 2)
 
-    ax2.hist('zpdf_1',color='b',bins=bins_zpdf[1::2],data=agn,histtype='step')
-    ax2.hist('zpdf_1',color='r',bins=bins_zpdf[1::2],data=gal,histtype='step')
-    ax2.set_xlabel('Redshift')
+    ax2.hist('ssfr_best',color='b',bins=bins_zpdf[1::2],data=agn,histtype='step')
+    ax2.hist('ssfr_best',color='r',bins=bins_zpdf[1::2],data=gal,histtype='step')
+    ax2.set_xlabel('SSFR $Log_{10} year^{-1}$')
 
     plt.tight_layout()
     plt.show()
 
     
-#doublehistogram()
+doublehistogram()

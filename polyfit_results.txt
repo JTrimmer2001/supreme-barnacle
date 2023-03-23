@@ -1,0 +1,13 @@
+For mass-ssfr:
+    AGNS: ssfr = -2.0058384555060784*mass + 11.174411502935136
+    NAGN: ssfr = -1.8303873913573216*mass + 7.650355610714501
+
+    Using polyfit
+
+for mass-sfr:
+    AGNS: sfr = -1.005829687277396*mass + 11.174411502935136
+    NAGN: sfr = -0.8304148874428474*mass + 7.650355610714501
+
+    Also using polyfit
+
+Both done on set 1 of the matched data
